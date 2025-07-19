@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExpenseFlow Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(90deg, #e2e2e2, #c9d6ff);
+            margin: 0;
+            padding: 0;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        
+        body.dark {
+            background: #121212;
+            color: #ffffff;
+        }
+
+        .dark .navbar {
+            background-color: #1f1f1f;
+            color: #ffffff;
+        }
+
+        .dark .card {
+            background-color: #1f1f1f;
+            color: #ffffff;
+        }
+
+        .dark .transactions {
+            background-color: #1f1f1f;
+            color: #ffffff;
+        }
+
+        .dark .transactions th,
+        .dark .transactions td {
+            color: #ffffff; 
+            border-bottom: 1px solid #444; 
+        }
+
+        .dark .transactions tr:hover {
+            background-color: #333; 
+        }
+
+        .dark .amount-income {
+            color: #2ecc71; 
+        }
+
+        .dark .amount-expense {
+            color: #e74c3c; 
+        }
+
+        .navbar {
+            background-color: #7494ec;
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar h2 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .navbar ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+
+        .navbar ul li {
+            margin-left: 20px;
+        }
+
+        .navbar ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            transition: color 0.3s ease;
+        }
+
+        .navbar ul li a:hover {
+            color: #5a7bd6;
+        }
+
+        .menu-toggle {
+            font-size: 24px;
+            cursor: pointer;
+            text-decoration: none;
+            color: white;
+            display: block;
+            background-color: #7494ec;
+            padding: 10px;
+            border-radius: 5px;
+            margin-left: auto;
+            transition: background-color 0.3s ease;
+        }
+
+        .dark .menu-toggle {
+            background-color: #1f1f1f; 
+        }
+
+        .menu-toggle:hover {
+            background-color: #5a7bd6;
+        }
+
+        .sidebar {
+            width: 250px;
+            position: fixed;
+            top: 0;
+            right: -250px;
+            background-color: #7494ec;
+            padding-top: 60px;
+            height: 100vh;
+            transition: right 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .dark .sidebar {
+            background-color: #1f1f1f; 
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            padding: 15px 20px;
+            border-radius: 5px;
+            margin: 0 10px;
+            text-align: center;
+            transition: background-color 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar .logout-btn {
+            color: #ff4d4d !important;
+            font-weight: bold;
+        }
+
+        .theme-toggle {
+            font-size: 16px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            margin: 0 10px;
+            text-align: center;
+            transition: background-color 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .theme-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .currency-selector {
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            margin: 10px;
+            border-radius: 5px;
+        }
+
+        .currency-selector label {
+            display: block;
+            margin-bottom: 10px;
+            color: white;
+            font-size: 16px;
+        }
+
+        .currency-selector select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            background-color: white;
+            font-size: 16px;
+        }
+
+        .currency-selector button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .currency-selector button:hover {
+            background-color: #27ae60;
+        }
+
+        #sidebar-toggle {
+            display: none;
+        }
+
+        #sidebar-toggle:checked ~ .sidebar {
+            right: 0;
+        }
+
+        .main-content {
+            padding: 20px;
+        }
+
+        .summary {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 20px;
+        }
+
+        .card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            flex: 1 1 calc(33.333% - 40px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .card.balance {
+            border-left: 5px solid #7494ec;
+        }
+
+        .card.income {
+            border-left: 5px solid #2ecc71;
+        }
+
+        .card.expense {
+            border-left: 5px solid #e74c3c;
+        }
+
+        .card h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #2c3e50;
+        }
+
+        .card p {
+            margin: 10px 0 0;
+            font-size: 24px;
+            font-weight: bold;
+            color: #34495e;
+        }
+
+        .buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .buttons button {
+            background-color: #7494ec;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            flex: 1 1 calc(33.333% - 30px);
+        }
+
+        .buttons button:hover {
+            background-color: #5a7bd6;
+        }
+
+        .transactions {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .transactions h3 {
+            margin-top: 0;
+            font-size: 20px;
+            color: #2c3e50;
+        }
+
+        .transactions table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .transactions th,
+        .transactions td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .transactions th {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .transactions th::after {
+            content: '▲';
+            font-size: 12px;
+            margin-left: 5px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .transactions th:hover::after {
+            opacity: 1;
+        }
+
+        .transactions th.sorted-asc::after {
+            content: '▲';
+            opacity: 1;
+        }
+
+        .transactions th.sorted-desc::after {
+            content: '▼';
+            opacity: 1;
+        }
+
+        .transactions tr:hover {
+            background-color: #f9f9f9; 
+        }
+
+        .dark .transactions tr:hover {
+            background-color: #333; 
+        }
+
+        .transactions .amount-income {
+            color: #2ecc71; 
+            font-weight: bold;
+        }
+
+        .dark .transactions .amount-income{
+            color: #2ecc71;
+            font-weight: bold;
+        }
+
+        .transactions .amount-expense {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .dark .transactions .amount-expense {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .sort-options {
+            margin-bottom: 20px;
+        }
+
+        .sort-options label {
+            font-size: 16px;
+            color: #34495e;
+            margin-right: 10px;
+        }
+
+        .sort-options select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            background-color: white;
+            cursor: pointer;
+        }
+
+        .sort-options select:hover {
+            border-color: #7494ec;
+        }
+
+
+        @media (max-width: 768px) {
+            .summary {
+                flex-direction: column;
+            }
+
+            .card {
+                flex: 1 1 100%;
+            }
+
+            .buttons button {
+                flex: 1 1 100%;
+            }
+
+            .transactions table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar h2 {
+                font-size: 20px;
+            }
+
+            .menu-toggle {
+                font-size: 20px;
+                padding: 8px;
+            }
+
+            .sidebar {
+                width: 200px;
+            }
+
+            .sidebar a {
+                font-size: 14px;
+                padding: 10px 15px;
+            }
+
+            .currency-selector {
+                padding: 15px;
+            }
+
+            .currency-selector label {
+                font-size: 14px;
+            }
+
+            .currency-selector select {
+                font-size: 14px;
+            }
+
+            .currency-selector button {
+                font-size: 14px;
+            }
+
+            .card h3 {
+                font-size: 16px;
+            }
+
+            .card p {
+                font-size: 20px;
+            }
+
+            .buttons button {
+                font-size: 14px;
+            }
+
+            .transactions h3 {
+                font-size: 18px;
+            }
+
+            .transactions th,
+            .transactions td {
+                font-size: 14px;
+                padding: 8px;
+            }
+        }
+
+       
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .dark .modal-content {
+            background-color: #1f1f1f;
+            color: #fff;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .dark .close:hover {
+            color: #fff;
+        }
+
+        .modal-header {
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 15px;
+        }
+
+        .dark .modal-header {
+            border-bottom: 1px solid #444;
+        }
+
+        .modal-body {
+            padding: 20px 0;
+            margin-bottom: 15px;
+        }
+
+        .modal-footer {
+            padding: 10px 0;
+            border-top: 1px solid #ddd;
+            text-align: right;
+            margin-top: 15px;
+        }
+
+        .dark .modal-footer {
+            border-top: 1px solid #444;
+        }
+
+        .modal-footer button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            margin-left: 10px;
+        }
+
+        .modal-footer button.cancel {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .modal-footer button.confirm {
+            background-color: #2ecc71;
+            color: white;
+        }
+
+        .modal-footer button:hover {
+            opacity: 0.9;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .dark .form-group input {
+            background-color: #333;
+            color: #fff;
+            border-color: #444;
+        }
+    </style>
+</head>
+<body class="{{ 'dark' if user_theme == 'dark' else 'light' }}">
+    <div class="navbar">
+        <h2>ExpenseFlow</h2>
+        <label for="sidebar-toggle" class="menu-toggle">☰</label>
+    </div>
+
+    <input type="checkbox" id="sidebar-toggle">
+
+    <div class="sidebar">
+        <label for="sidebar-toggle" class="close-btn">&times;</label>
+        
+        <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()">
+            {{ '🌙 Switch to Dark Theme' if user_theme == 'light' else '☀️ Switch to Light Theme' }}
+        </button>
+
+        <div class="currency-selector">
+            <form method="POST" action="{{ url_for('change_currency') }}">
+                <label for="currency">Change Currency:</label>
+                <select name="currency" id="currency">
+                    <option value="$ (USD)">$ (USD)</option>
+                    <option value="€ (EUR)">€ (EUR)</option>
+                    <option value="¥ (JPY)">¥ (JPY)</option>
+                    <option value="£ (GBP)">£ (GBP)</option>
+                    <option value="₹ (INR)">₹ (INR)</option>
+                    <option value="C$ (CAD)">C$ (CAD)</option>
+                    <option value="A$ (AUD)">A$ (AUD)</option>
+                    <option value="₣ (CHF)">₣ (CHF)</option>
+                    <option value="₩ (KRW)">₩ (KRW)</option>
+                    <option value="₺ (TRY)">₺ (TRY)</option>
+                </select>
+                <button type="submit" class="currency-btn">Save</button>
+            </form>
+        </div>
+
+        <a href="#reset-password-modal" class="logout-btn">Reset Password</a>
+
+        <a href="#reset-dashboard-modal" class="logout-btn">Reset Dashboard</a>
+
+        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+    </div>
+
+    <div class="main-content">
+        <div class="summary">
+            <div class="card expense">
+                <h3>Expense</h3>
+                <p>{{ user_currency.split(' ')[0] }}{{ "%.2f"|format(expense) }}</p>
+            </div>
+            <div class="card income">
+                <h3>Income</h3>
+                <p>{{ user_currency.split(' ')[0] }}{{ "%.2f"|format(income) }}</p>
+            </div>
+            <div class="card balance">
+                <h3>Balance</h3>
+                <p>{{ user_currency.split(' ')[0] }}{{ "%.2f"|format(balance) }}</p>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <a href="{{ url_for('add_expense') }}"><button>Add Expense</button></a>
+            <a href="{{ url_for('add_income') }}"><button>Add Income</button></a>
+            <a href="{{ url_for('all_transactions') }}"><button>View All Transactions</button></a>
+            <a href="{{ url_for('visualization') }}"><button>Wallet Cry-o-meter</button></a>
+            <a href="{{ url_for('upload_image') }}"><button>Upload Image</button></a>
+            <a href="{{ url_for('all_transactions') }}"><button>Edit Transactions</button></a>
+        </div>
+
+        <div class="date-filter">
+            <label for="date_filter">Filter by:</label>
+            <select id="date_filter" onchange="location = this.value;">
+                <option value="{{ url_for('dashboard', date_filter='all') }}" {% if date_filter == 'all' %}selected{% endif %}>All</option>
+                <option value="{{ url_for('dashboard', date_filter='today') }}" {% if date_filter == 'today' %}selected{% endif %}>Today</option>
+                <option value="{{ url_for('dashboard', date_filter='week') }}" {% if date_filter == 'week' %}selected{% endif %}>This Week</option>
+                <option value="{{ url_for('dashboard', date_filter='month') }}" {% if date_filter == 'month' %}selected{% endif %}>This Month</option>
+                <option value="{{ url_for('dashboard', date_filter='last_month') }}" {% if date_filter == 'last_month' %}selected{% endif %}>Last Month</option>
+                <option value="{{ url_for('dashboard', date_filter='year') }}" {% if date_filter == 'year' %}selected{% endif %}>This Year</option>
+            </select>
+        </div>
+
+        <div class="transactions">
+            <h3>Recent Transactions</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th>Remark</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in transactions %}
+                    <tr>
+                        <td>{{ transaction.date }}</td>
+                        <td>{{ transaction.category }}</td>
+                        <td>{{ transaction.remark }}</td>
+                        <td>{{ transaction.type }}</td>
+                        <td class="{% if transaction.type == 'Income' %}amount-income{% else %}amount-expense{% endif %}">
+                            {{ transaction.currency }}{{ "%.2f"|format(transaction.amount) }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="reset-password-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close" onclick="closeModal('reset-password-modal')">&times;</span>
+                <h3>Reset Password</h3>
+            </div>
+            <div class="modal-body">
+                <form id="reset-password-form" method="POST" action="{{ url_for('reset_password') }}">
+                    <div class="form-group">
+                        <label for="new_password">New Password:</label>
+                        <input type="password" id="new_password" name="new_password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm_password">Confirm Password:</label>
+                        <input type="password" id="confirm_password" name="confirm_password" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="cancel" onclick="closeModal('reset-password-modal')">Cancel</button>
+                <button class="confirm" type="submit" form="reset-password-form">Reset Password</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="reset-dashboard-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close" onclick="closeModal('reset-dashboard-modal')">&times;</span>
+                <h3>Reset Dashboard</h3>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to reset your dashboard? This will delete all transactions.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="cancel" onclick="closeModal('reset-dashboard-modal')">Cancel</button>
+                <button class="confirm" onclick="resetDashboard()">Reset Dashboard</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleTheme() {
+            fetch('/toggle_theme', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload(); 
+                    } else {
+                        console.error('Failed to toggle theme');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const userTheme = '{{ user_theme }}'; 
+            document.body.classList.toggle('dark', userTheme === 'dark');
+        });
+
+        function sortTable(table, columnIndex, order) {
+            const rows = Array.from(table.querySelectorAll('tbody tr'));
+            const isAscending = order === 'asc';
+
+            rows.sort((a, b) => {
+                const aValue = a.cells[columnIndex].textContent.trim();
+                const bValue = b.cells[columnIndex].textContent.trim();
+
+                if (!isNaN(aValue) && !isNaN(bValue)) {
+                    return isAscending ? aValue - bValue : bValue - aValue;
+                }
+
+                return isAscending
+                    ? aValue.localeCompare(bValue)
+                    : bValue.localeCompare(aValue);
+            });
+
+            const tbody = table.querySelector('tbody');
+            tbody.innerHTML = '';
+
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const tables = document.querySelectorAll('.transactions table');
+            tables.forEach(table => {
+                const headers = table.querySelectorAll('th');
+                headers.forEach((header, index) => {
+                    header.addEventListener('click', () => {
+                        const isAscending = header.classList.contains('sorted-asc');
+                        const isDescending = header.classList.contains('sorted-desc');
+
+                        headers.forEach(h => h.classList.remove('sorted-asc', 'sorted-desc'));
+
+                        if (!isAscending && !isDescending) {
+                            header.classList.add('sorted-asc');
+                            sortTable(table, index, 'asc');
+                        } else if (isAscending) {
+                            header.classList.add('sorted-desc');
+                            sortTable(table, index, 'desc');
+                        } else if (isDescending) {
+                            sortTable(table, index, 'asc'); 
+                        }
+                    });
+                });
+            });
+        });
+
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'block';
+            }
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function resetDashboard() {
+            fetch('/reset_dashboard', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload(); 
+                    } else {
+                        console.error('Failed to reset dashboard');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const resetPasswordBtn = document.querySelector('a[href="#reset-password-modal"]');
+            const resetDashboardBtn = document.querySelector('a[href="#reset-dashboard-modal"]');
+
+            if (resetPasswordBtn) {
+                resetPasswordBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    openModal('reset-password-modal');
+                });
+            }
+
+            if (resetDashboardBtn) {
+                resetDashboardBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    openModal('reset-dashboard-modal');
+                });
+            }
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

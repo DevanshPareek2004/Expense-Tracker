@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet Cry-o-meter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(90deg, #e2e2e2, #c9d6ff);
+            margin: 0;
+            padding: 0;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        body.dark {
+            background: #121212;
+            color: #ffffff;
+        }
+
+        .navbar {
+            background-color: #7494ec;
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar h2 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .navbar ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+
+        .navbar ul li {
+            margin-left: 20px;
+        }
+
+        .navbar ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            transition: color 0.3s ease;
+        }
+
+        .navbar ul li a:hover {
+            color: #5a7bd6;
+        }
+
+        .main-content {
+            padding: 20px;
+        }
+
+        
+        .meter-container {
+            width: 80%;
+            margin: 20px auto;
+            text-align: center;
+            position: relative;
+        }
+
+        
+        .meter-bar {
+            width: 100%;
+            height: 20px;
+            background: linear-gradient(to right, green, yellow, red);
+            border-radius: 10px;
+            position: relative;
+        }
+
+        
+        .meter-pointer {
+            width: 2px;
+            height: 30px;
+            background: black;
+            position: absolute;
+            top: -5px;
+            left: 50%; 
+            transform: translateX(-50%);
+            transition: left 0.5s ease;
+        }
+
+       
+        .faces {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .face {
+            font-size: 24px;
+        }
+
+        
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 20px;
+        }
+
+        .grid-item {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .dark .grid-item {
+            background-color: #1f1f1f;
+            color: #ffffff;
+        }
+
+        .grid-item img {
+            width: 100%;
+            height: auto;
+        }
+
+        .dark .meter-bar {
+            background: linear-gradient(to right, green, yellow, red);
+        }
+
+        .dark .meter-pointer {
+            background: white;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="{{ 'dark' if user_theme == 'dark' else 'light' }}">
+   
+    <div class="navbar">
+        <h2>Wallet Cry-o-meter</h2>
+        <ul>
+            <li><a href="{{ url_for('dashboard') }}">Back to Dashboard</a></li>
+        </ul>
+    </div>
+
+   
+    <div class="main-content">
+        
+        <div class="meter-container">
+            <div class="meter-bar"></div>
+            <div class="meter-pointer" id="meter-pointer"></div>
+            <div class="faces">
+                <div class="face">😊</div> 
+                <div class="face">😐</div> 
+                <div class="face">😢</div> 
+            </div>
+        </div>
+
+        
+        <div class="grid-container">
+           
+            <div class="grid-item">
+                <img src="data:image/png;base64,{{ visualizations.monthly_expense_vs_income }}" alt="Monthly Expense vs. Income">
+            </div>
+
+            
+            <div class="grid-item">
+                <img src="data:image/png;base64,{{ visualizations.expense_breakdown_by_category }}" alt="Expense Breakdown by Category">
+            </div>
+
+            <div class="grid-item">
+                <img src="data:image/png;base64,{{ visualizations.expense_trend_over_time }}" alt="Expense Trend Over Time">
+            </div>
+
+            <div class="grid-item">
+                <img src="data:image/png;base64,{{ visualizations.category_wise_spending_over_time }}" alt="Category-wise Spending Over Time">
+            </div>
+
+            <div class="grid-item">
+                <img src="data:image/png;base64,{{ visualizations.income_vs_expense_distribution }}" alt="Income vs. Expense Distribution">
+            </div>
+
+            <div class="grid-item">
+                <img src="data:image/png;base64,{{ visualizations.savings_over_time }}" alt="Savings Over Time">
+            </div>
+
+            <div class="grid-item">
+                <img src="data:image/png;base64,{{ visualizations.monthly_category_spending }}" alt="Monthly Category Spending">
+            </div>
+
+            <div class="grid-item">
+                <img src="data:image/png;base64,{{ visualizations.expense_vs_income_ratio }}" alt="Expense vs. Income Ratio">
+            </div>
+
+            <div class="grid-item">
+                <img src="data:image/png;base64,{{ visualizations.weekly_spending_pattern }}" alt="Weekly Spending Pattern">
+            </div>
+
+            <div class="grid-item">
+                <img src="data:image/png;base64,{{ visualizations.word_cloud_for_expense_remarks }}" alt="Word Cloud for Expense Remarks">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        fetch('/get_balance_data')
+            .then(response => response.json())
+            .then(data => {
+                const balance = data.balance;
+                const meterPointer = document.getElementById('meter-pointer');
+
+                let pointerPosition;
+                if (balance > 0) {
+                    pointerPosition = 0; 
+                } else if (balance === 0) {
+                    pointerPosition = 50; 
+                } else {
+                    pointerPosition = 100; 
+                }
+
+                meterPointer.style.left = `${pointerPosition}%`;
+            });
+    </script>
+</body>
+</html>

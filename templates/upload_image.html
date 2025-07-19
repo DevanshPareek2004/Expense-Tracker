@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Image</title>
+    <style>
+      
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(90deg, #e2e2e2, #c9d6ff);
+            margin: 0;
+            padding: 0;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        
+        body.dark {
+            background: #121212;
+            color: #ffffff;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .dark .container {
+            background: #1f1f1f;
+            color: #ffffff;
+        }
+
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .dark h2 {
+            color: #ffffff;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        input[type="file"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .dark input[type="file"] {
+            background: #333;
+            color: #ffffff;
+            border-color: #444;
+        }
+
+        button {
+            background-color: #7494ec;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #5a7bd6;
+        }
+
+        .dark button {
+            background-color: #1f1f1f;
+            border: 1px solid #444;
+        }
+
+        .dark button:hover {
+            background-color: #333;
+        }
+    </style>
+</head>
+<body class="{{ 'dark' if user_theme == 'dark' else 'light' }}">
+    <div class="container">
+        <h2>Upload Image</h2>
+        <form method="POST" enctype="multipart/form-data">
+            <input type="file" name="file" accept="image/*" required>
+            <button type="submit">Upload</button>
+        </form>
+    </div>
+</body>
+</html>

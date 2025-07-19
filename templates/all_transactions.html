@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Transactions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(90deg, #e2e2e2, #c9d6ff);
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar {
+            background-color: #7494ec;
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .navbar h2 {
+            margin: 0;
+            font-size: 24px;
+            padding: 5px 0;
+        }
+
+        .navbar ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .navbar ul li {
+            margin-left: 20px;
+            padding: 5px 0;
+        }
+
+        .navbar ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .navbar ul li a:hover {
+            text-decoration: underline;
+        }
+
+        .main-content {
+            padding: 20px;
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+        .transactions {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+
+        .transactions h3 {
+            margin-top: 0;
+            font-size: 20px;
+            color: #2c3e50;
+        }
+
+        .transactions table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+
+        .transactions th,
+        .transactions td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .transactions th {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .transactions th::after {
+            content: '▲';
+            font-size: 12px;
+            margin-left: 5px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .transactions th:hover::after {
+            opacity: 1;
+        }
+
+        .transactions th.sorted-asc::after {
+            content: '▲';
+            opacity: 1;
+        }
+
+        .transactions th.sorted-desc::after {
+            content: '▼';
+            opacity: 1;
+        }
+
+        .transactions tr:hover {
+            background-color: #f9f9f9; /* Light mode hover effect */
+        }
+
+        .transactions .amount-income {
+            color: #2ecc71; /* Green for income in light mode */
+            font-weight: bold;
+        }
+
+        .transactions .amount-expense {
+            color: #e74c3c; /* Red for expense in light mode */
+            font-weight: bold;
+        }
+
+        .buttons {
+            margin: 20px 0 20px 20px; /* Added top margin for spacing */
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .buttons a {
+            text-decoration: none;
+        }
+
+        .buttons button {
+            background-color: #7494ec;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            white-space: nowrap;
+        }
+
+        .buttons button:hover {
+            background-color: #5a7bd6;
+        }
+
+        .sort-options {
+            margin-bottom: 20px;
+        }
+
+        .sort-options label {
+            font-size: 16px;
+            color: #34495e;
+            margin-right: 10px;
+        }
+
+        .sort-options select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            background-color: white;
+            cursor: pointer;
+        }
+
+        .sort-options select:hover {
+            border-color: #7494ec;
+        }
+
+        /* Action buttons */
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .btn-edit {
+            padding: 5px 10px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-delete {
+            padding: 5px 10px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .btn-edit:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-delete:hover {
+            background-color: #c0392b;
+        }
+
+        /* Dark Theme */
+        body.dark {
+            background: #121212;
+            color: #ffffff;
+        }
+
+        .dark .navbar {
+            background-color: #1f1f1f;
+            color: #ffffff;
+        }
+
+        .dark .transactions {
+            background-color: #1f1f1f;
+            color: #ffffff;
+        }
+
+        .dark .transactions th,
+        .dark .transactions td {
+            color: #ffffff; /* Ensure text color is white in dark mode */
+            border-bottom: 1px solid #444; /* Darker border for dark mode */
+        }
+
+        .dark .transactions tr:hover {
+            background-color: #333; /* Dark mode hover effect */
+        }
+
+        .dark .amount-income {
+            color: #2ecc71; /* Green for income in dark mode */
+        }
+
+        .dark .amount-expense {
+            color: #e74c3c; /* Red for expense in dark mode */
+        }
+
+        .dark .buttons button {
+            background-color: #7494ec;
+            color: white;
+        }
+
+        .dark .buttons button:hover {
+            background-color: #5a7bd6;
+        }
+
+        .dark .sort-options label {
+            color: #ffffff;
+        }
+
+        .dark .sort-options select {
+            background-color: #333;
+            color: #ffffff;
+            border-color: #555;
+        }
+
+        .dark .sort-options select:hover {
+            border-color: #7494ec;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .navbar ul {
+                margin-top: 10px;
+                width: 100%;
+            }
+
+            .navbar ul li {
+                margin-left: 0;
+                margin-right: 15px;
+                margin-bottom: 5px;
+            }
+
+            .transactions {
+                padding: 15px;
+            }
+
+            .transactions th,
+            .transactions td {
+                padding: 8px;
+                font-size: 14px;
+            }
+
+            .buttons {
+                margin: 15px 0 15px 15px; /* Adjusted for mobile */
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                gap: 3px;
+            }
+
+            .btn-edit, .btn-delete {
+                padding: 3px 6px;
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar h2 {
+                font-size: 20px;
+            }
+
+            .navbar ul li a {
+                font-size: 14px;
+            }
+
+            .buttons button {
+                padding: 8px 15px;
+                font-size: 14px;
+            }
+
+            .main-content {
+                padding: 10px;
+            }
+
+            .transactions {
+                padding: 10px;
+            }
+
+            .transactions h3 {
+                font-size: 18px;
+            }
+
+            .buttons {
+                margin: 10px 0 10px 10px; /* Adjusted for small mobile */
+            }
+        }
+    </style>
+</head>
+<body class="{{ 'dark' if user_theme == 'dark' else 'light' }}">
+    <div class="navbar">
+        <h2>ExpenseFlow</h2>
+        <ul>
+            <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+            <li><a href="{{ url_for('add_expense') }}">Add Expense</a></li>
+            <li><a href="{{ url_for('add_income') }}">Add Income</a></li>
+            <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        </ul>
+    </div>
+    <div class="buttons">
+        <a href="{{ url_for('download_transactions_pdf') }}"><button>Download PDF</button></a>
+        <a href="{{ url_for('send_transactions_pdf') }}"><button>Email PDF</button></a>
+    </div>
+    <div class="main-content">
+        <!-- All Transactions Section -->
+        <div class="transactions">
+            <h3>All Transactions</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th>Remark</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in transactions %}
+                    <tr>
+                        <td>{{ transaction.date }}</td>
+                        <td>{{ transaction.category }}</td>
+                        <td>{{ transaction.remark }}</td>
+                        <td>{{ transaction.type }}</td>
+                        <td class="{% if transaction.type == 'Income' %}amount-income{% else %}amount-expense{% endif %}">
+                            {{ transaction.currency }}{{ "%.2f"|format(transaction.amount) }}
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{{ url_for('edit_transaction', transaction_id=transaction.id) }}" class="btn-edit">Edit</a>
+                                <form method="POST" action="{{ url_for('delete_transaction_route', transaction_id=transaction.id) }}" style="display: inline;">
+                                    <button type="submit" class="btn-delete" onclick="return confirm('Are you sure you want to delete this transaction?')">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- JavaScript for Sorting -->
+    <script>
+        function sortTable(table, columnIndex, order) {
+            const rows = Array.from(table.querySelectorAll('tbody tr'));
+            const isAscending = order === 'asc';
+            
+            rows.sort((a, b) => {
+                const aValue = a.cells[columnIndex].textContent.trim();
+                const bValue = b.cells[columnIndex].textContent.trim();
+
+                // Handle numeric sorting for amount columns
+                if (!isNaN(aValue) && !isNaN(bValue)) {
+                    return isAscending ? aValue - bValue : bValue - aValue;
+                }
+
+                // Handle string sorting for other columns
+                return isAscending
+                    ? aValue.localeCompare(bValue)
+                    : bValue.localeCompare(aValue);
+            });
+
+            // Clear the table body
+            const tbody = table.querySelector('tbody');
+            tbody.innerHTML = '';
+
+            // Append sorted rows
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        function handleColumnClick(event) {
+            const th = event.target;
+            const table = th.closest('table');
+            const columnIndex = Array.from(th.parentElement.children).indexOf(th);
+
+            // Check the current sorting state
+            const isAscending = th.classList.contains('sorted-asc');
+            const isDescending = th.classList.contains('sorted-desc');
+
+            // Remove sorting classes from all headers
+            table.querySelectorAll('th').forEach(header => {
+                header.classList.remove('sorted-asc', 'sorted-desc');
+            });
+
+            // Toggle sorting order
+            if (!isAscending && !isDescending) {
+                // First click: sort ascending
+                th.classList.add('sorted-asc');
+                sortTable(table, columnIndex, 'asc');
+            } else if (isAscending) {
+                // Second click: sort descending
+                th.classList.add('sorted-desc');
+                sortTable(table, columnIndex, 'desc');
+            } else if (isDescending) {
+                // Third click: reset to original order (optional)
+                sortTable(table, columnIndex, 'asc'); // Reset to ascending or original order
+            }
+        }
+
+        // Attach click event listeners to column headers
+        document.addEventListener('DOMContentLoaded', () => {
+            const tables = document.querySelectorAll('.transactions table');
+            tables.forEach(table => {
+                const headers = table.querySelectorAll('th');
+                headers.forEach(header => {
+                    header.addEventListener('click', handleColumnClick);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
